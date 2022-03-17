@@ -17,7 +17,7 @@ import './utils/TIP6/TIP6.sol';
 /// @title One of the required contracts of an TIP4-1(Non-Fungible Token Standard) compliant technology.
 /// For detect what interfaces a smart contract implements used TIP-6.1 standard. ...
 /// ... Read more here (https://github.com/nftalliance/docs/blob/main/src/Standard/TIP-6/1.md)
-contract TIP4Nft is ITIP41Nft, TIP6 {
+contract Nft is ITIP41Nft, TIP6 {
 
     /// Unique NFT id
     uint256 static _id;
