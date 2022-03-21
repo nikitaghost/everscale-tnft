@@ -33,28 +33,40 @@ contract Nft is ITIP41Nft, TIP6 {
 
     /**
         @notice Initializes the contract by setting a `owner` to the NFT.
-        Collection address get from the contract code that is "building" into NftResolver (resolvers/NftResolver.sol)
+        Collection address get from the contract code that is "building" into Collection._buildNftCode, Collection._buildNftState
         _supportedInterfaces mapping used in TIP-6 standart
         Emit TokenMinted event
     */
     constructor(
-        address owner
+        address owner,
+        address sendGasTo,
+        uint128 remainOnNft
     ) public {
 
         optional(TvmCell) optSalt = tvm.codeSalt(tvm.code());
         require(optSalt.hasValue(), NftErrors.value_is_empty);
         (address collection) = optSalt.get().toSlice().decode(address);
         require(msg.sender == collection, NftErrors.sender_is_not_collection);
+        require(remainOnNft != 0, NftErrors.value_is_empty);
+        require(msg.value > remainOnNft, NftErrors.value_is_less_than_required);
         tvm.accept();
+        tvm.rawReserve(0, remainOnNft);
 
         _collection = collection;
         _owner = owner;
         _manager = owner;
 
         _supportedInterfaces[ bytes4(tvm.functionId(ITIP6.supportsInterface)) ] = true;
+        _supportedInterfaces[
+            bytes4(tvm.functionId(ITIP41Nft.getInfo)) ^
+            bytes4(tvm.functionId(ITIP41Nft.changeOwner)) ^
+            bytes4(tvm.functionId(ITIP41Nft.changeManager))
+        ] = true;
 
         emit TokenMinted(_owner, _manager);
 
+        sendGasTo = sendGasTo.value == 0 ? msg.sender : sendGasTo;
+        sendGasTo.transfer({value: 0, flag: 128});
     }
      
     /// @notice Transfers ownership to another account

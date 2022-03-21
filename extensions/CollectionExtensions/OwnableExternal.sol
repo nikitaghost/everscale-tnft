@@ -12,8 +12,8 @@ abstract contract OwnableExternal {
         _transferOwnership(owner);
     }
 
-    function owner() public view virtual returns (uint256 pubkey) {
-        return _owner;
+    function owner() public view virtual responsible returns (uint256 pubkey) {
+        return {value: 0, flag: 64}_owner;
     }
 
     function transferOwnership(uint256 newOwner) public virtual onlyOwner {

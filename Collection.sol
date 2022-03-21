@@ -9,7 +9,7 @@ import './extensions/CollectionExtensions/OwnableExternal.sol';
 import './errors/CollectionErrors.sol';
 import './Nft.sol';
 
-contract NftCollection is ITIP41NftCollection, OwnableExternal {
+contract Collection is ITIP41NftCollection, OwnableExternal {
     
     TvmCell _codeNft;
     uint256 _totalSupply;
@@ -26,14 +26,19 @@ contract NftCollection is ITIP41NftCollection, OwnableExternal {
     }
 
     function mintNft() external virtual override {
+        require(msg.value > _remainOnNft + 0.1 ton, CollectionErrors.value_is_less_than_required);
         tvm.rawReserve(msg.value, 1);
 
         TvmCell codeNft = _buildNftCode(address(this));
         TvmCell stateNft = _buildNftState(codeNft, _totalSupply);
         address nftAddr = new Nft{
             stateInit: stateNft,
-            value: _remainOnNft
-        }(msg.sender); 
+            value: msg.value
+        }(
+            msg.sender,
+            msg.sender,
+            _remainOnNft
+        ); 
 
         emit nftCreated(
             _totalSupply, 
