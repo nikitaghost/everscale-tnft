@@ -87,8 +87,7 @@ contract Nft is ITIP41Nft, TIP6 {
         address newOwner, 
         address sendGasTo, 
         mapping(address => CallbackParams) callbacks
-    ) external virtual override onlyManager {
-
+    ) public virtual override onlyManager {
         require(newOwner.value != 0, NftErrors.value_is_empty);
         tvm.rawReserve(msg.value, 1);
 
