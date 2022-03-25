@@ -39,7 +39,7 @@ contract TIP4_2Nft is TIP4_1Nft, ITIP4_2JSON_Metadata {
     
     /// See interfaces/ITIP4_2JSON_Metadata.sol
     function getJson() external view override responsible returns (string json) {
-        return {value: 0, flag: 64} (_json);
+        return {value: 0, flag: 64, bounce: false} (_json);
     }
 
 }
