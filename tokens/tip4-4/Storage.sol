@@ -21,13 +21,14 @@ contract Storage is ITIP4_4Storage {
     uint128 _chunksUploaded;
     mapping(uint8 => bytes) _chunks;
 
+    /// @dev по сути рекваер на sender не нужен т.к. collection мы любой в параметр можем передать. Может static сделать?
     constructor(
         address uploader,
         address collection,
         string mimeType,
         uint128 chunksNum
     ) public {
-        require(msg.sender == _nft);
+        require(msg.sender == collection);
         tvm.accept();
         
         _uploader = uploader;
