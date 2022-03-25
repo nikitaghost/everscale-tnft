@@ -17,8 +17,9 @@ contract TIP4_3Collection is TIP4_1Collection, ITIP4_3Collection {
     TvmCell _codeIndex;
     TvmCell _codeIndexBasis;
 
+    /// @dev пересчитать значения
     uint128 _indexDeployValue = 0.4 ton;
-    uint128 _indexDestroyValue = 0.4 ton;
+    uint128 _indexDestroyValue = 0.1 ton;
     uint128 _deployIndexBasisValue = 0.4 ton;
 
     /// _remainOnNft - the number of crystals that will remain after the entire mint 
@@ -73,13 +74,14 @@ contract TIP4_3Collection is TIP4_1Collection, ITIP4_3Collection {
     //     msg.sender.transfer({value: 0, flag: 128});
     // }
 
-    function deployIndexBasis(uint128 value) external view responsible onlyOwner returns (address indexBasis) {
+    function deployIndexBasis() external view responsible onlyOwner returns (address indexBasis) {
         TvmCell empty;
         require(_codeIndexBasis != empty, CollectionErrors.value_is_empty);
+        require(address(this).balance > _deployIndexBasisValue);
 
         TvmCell code = _buildIndexBasisCode();
         TvmCell state = _buildIndexBasisState(code, address(this));
-        indexBasis = new IndexBasis{stateInit: state, value: value}();
+        indexBasis = new IndexBasis{stateInit: state, value: _deployIndexBasisValue}();
         return {value: 0, flag: 64} (indexBasis);
     }
 

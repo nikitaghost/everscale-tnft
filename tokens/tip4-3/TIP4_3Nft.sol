@@ -78,9 +78,8 @@ contract TIP4_3Nft is TIP4_1Nft, ITIP4_3NFT {
         return {value: 0, flag: 64} (_codeIndex);
     }
 
-    /// Почему мы возвращаем чистый код хэш? Мы же солим в код индекса переменные
-    function indexCodeHash(address collection, address owner) public view override responsible returns (uint256 hash) {
-        return {value: 0, flag: 64} tvm.hash(_buildIndexCode(collection, owner));
+    function indexCodeHash() public view override responsible returns (uint256 hash) {
+        return {value: 0, flag: 64} tvm.hash(_codeIndex);
     }
 
     function resolveIndex(address collection, address owner) public view override responsible returns (address index) {
