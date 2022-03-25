@@ -67,7 +67,6 @@ contract TIP4_1Nft is ITIP4_1NFT, TIP6 {
 
         emit NftCreated(_id, _owner, _manager, _collection);
 
-        sendGasTo = sendGasTo.value == 0 ? msg.sender : sendGasTo;
         sendGasTo.transfer({value: 0, flag: 128});
     }
      
@@ -79,8 +78,8 @@ contract TIP4_1Nft is ITIP4_1NFT, TIP6 {
     /// Can only be called from the manager's address
     /// Requirements:
     ///
-    /// - `newOwner` cannot be the zero address.
-    /// - `sendGasTo` can be the zero address.
+    /// - `newOwner` can't be the zero address.
+    /// - `sendGasTo` can't be the zero address.
     /// - `callbacks` can be the zero mapping.
     /// - Callbacks(key) address must implement {INftChangeOwner-onNftChangeOwner}.
     ///
@@ -90,44 +89,25 @@ contract TIP4_1Nft is ITIP4_1NFT, TIP6 {
         address sendGasTo, 
         mapping(address => CallbackParams) callbacks
     ) public virtual override onlyManager {
-        require(newOwner.value != 0, NftErrors.value_is_empty);
         tvm.rawReserve(msg.value, 1);
 
         address oldOwner = _owner;
-        sendGasTo = sendGasTo.value != 0 ? sendGasTo : msg.sender;
-
         _changeOwner(newOwner);
-        emit OwnerChanged(oldOwner, newOwner);
 
-        optional(TvmCell) callbackToGasOwner;
         for ((address dest, CallbackParams p) : callbacks) {
-            if (dest.value != 0) {
-                if (sendGasTo != dest) {
-                    INftChangeOwner(dest).onNftChangeOwner{
-                        value: p.value,
-                        flag: 0,
-                        bounce: false
-                    }(_id, oldOwner, _manager, newOwner, _manager, _collection, sendGasTo, p.payload);
-                } else {
-                    callbackToGasOwner.set(p.payload);
-                }
-            }
+            INftChangeOwner(dest).onNftChangeOwner{
+                value: p.value,
+                flag: 0,
+                bounce: false
+            }(_id, oldOwner, _manager, newOwner, _manager, _collection, sendGasTo, p.payload);
         }
 
         if (sendGasTo.value != 0) {
-            if (callbackToGasOwner.hasValue()) {
-                INftChangeOwner(sendGasTo).onNftChangeOwner{
-                    value: 0,
-                    flag: 128,
-                    bounce: false
-                }(_id, oldOwner, _manager, newOwner, _manager, _collection, sendGasTo, callbackToGasOwner.get());
-            } else {
-                sendGasTo.transfer({
-                    value: 0,
-                    flag: 128,
-                    bounce: false
-                });
-            }
+            sendGasTo.transfer({
+                value: 0,
+                flag: 128,
+                bounce: false
+            });
         }
 
     }   
@@ -135,9 +115,9 @@ contract TIP4_1Nft is ITIP4_1NFT, TIP6 {
     function _changeOwner(
         address newOwner
     ) internal {
-        require(newOwner.value != 0, NftErrors.value_is_empty);
-
+        address oldOwner = _owner;
         _owner = newOwner;
+        emit OwnerChanged(oldOwner, newOwner);
     }
 
 
@@ -160,45 +140,25 @@ contract TIP4_1Nft is ITIP4_1NFT, TIP6 {
         address sendGasTo, 
         mapping(address => CallbackParams) callbacks
     ) external virtual override onlyManager {
-
-        require(newManager.value != 0, NftErrors.value_is_empty);
         tvm.rawReserve(msg.value, 1);
 
         address oldManager = _manager;
-        sendGasTo = sendGasTo.value != 0 ? sendGasTo : msg.sender;
-
         _changeManager(newManager);
-        emit ManagerChanged(oldManager, newManager);
 
-        optional(TvmCell) callbackToGasOwner;
         for ((address dest, CallbackParams p) : callbacks) {
-            if (dest.value != 0) {
-                if (sendGasTo != dest) {
-                    INftChangeManager(dest).onNftChangeManager{
-                        value: p.value,
-                        flag: 0,
-                        bounce: false
-                    }(_id, _owner, oldManager, _owner, newManager, _collection, sendGasTo, p.payload);
-                } else {
-                    callbackToGasOwner.set(p.payload);
-                }
-            }
+            INftChangeManager(dest).onNftChangeManager{
+                value: p.value,
+                flag: 0,
+                bounce: false
+            }(_id, _owner, oldManager, _owner, newManager, _collection, sendGasTo, p.payload);
         }
 
         if (sendGasTo.value != 0) {
-            if (callbackToGasOwner.hasValue()) {
-                INftChangeManager(sendGasTo).onNftChangeManager{
-                    value: 0,
-                    flag: 128,
-                    bounce: false
-                }(_id, _owner, oldManager, _owner, newManager, _collection, sendGasTo, callbackToGasOwner.get());
-            } else {
-                sendGasTo.transfer({
-                    value: 0,
-                    flag: 128,
-                    bounce: false
-                });
-            }
+            sendGasTo.transfer({
+                value: 0,
+                flag: 128,
+                bounce: false
+            });
         }
 
     }
@@ -206,9 +166,9 @@ contract TIP4_1Nft is ITIP4_1NFT, TIP6 {
     function _changeManager(
         address newManager
     ) internal {
-        require(newManager.value != 0, NftErrors.value_is_empty);
-
+        address oldManager = _manager;
         _manager = newManager;
+        emit ManagerChanged(oldManager, newManager);
     }
 
     /// @notice Returns the main parameters of the token.
@@ -225,7 +185,7 @@ contract TIP4_1Nft is ITIP4_1NFT, TIP6 {
         address manager, 
         address collection)
     {
-        return {value: 0, flag: 64} (
+        return {value: 0, flag: 64, bounce: false} (
             _id,
             _owner,
             _manager,

@@ -64,23 +64,23 @@ contract TIP4_1Collection is ITIP4_1Collection, OwnableExternal {
     // } 
 
     function totalSupply() external view virtual override responsible returns (uint128 count) {
-        return {value: 0, flag: 64} (_totalSupply);
+        return {value: 0, flag: 64, bounce: false} (_totalSupply);
     }
 
     function nftCode() external view virtual override responsible returns (TvmCell code) {
-        return {value: 0, flag: 64} (_buildNftCode(address(this)));
+        return {value: 0, flag: 64, bounce: false} (_buildNftCode(address(this)));
     }
 
     function nftCodeHash() external view virtual override responsible returns (uint256 codeHash) {
-        return {value: 0, flag: 64} (resolveCodeHashNft());
+        return {value: 0, flag: 64, bounce: false} (resolveCodeHashNft());
     }
 
     function nftAddress(uint256 id) external view virtual override responsible returns (address nft) {
-        return {value: 0, flag: 64} (resolveNft(address(this), id));
+        return {value: 0, flag: 64, bounce: false} (resolveNft(address(this), id));
     }
 
     function resolveCodeHashNft() public view responsible returns (uint256 codeHashData) {
-        return {value: 0, flag: 64}(tvm.hash(_buildNftCode(address(this))));
+        return {value: 0, flag: 64, bounce: false}(tvm.hash(_buildNftCode(address(this))));
     }
 
     function resolveNft(
@@ -91,7 +91,7 @@ contract TIP4_1Collection is ITIP4_1Collection, OwnableExternal {
         TvmCell state = _buildNftState(code, id);
         uint256 hashState = tvm.hash(state);
         addrNft = address.makeAddrStd(0, hashState);
-        return {value: 0, flag: 64} (addrNft);
+        return {value: 0, flag: 64, bounce: false} (addrNft);
     }
 
     function _buildNftCode(address addrRoot) internal virtual view returns (TvmCell) {
